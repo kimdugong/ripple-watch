@@ -7,6 +7,9 @@ class RippleWatch extends Component {
     const address = await ripple.getAccountInfo(
       'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5'
     );
+    ripple.on('ledger', ledger => {
+      console.log(JSON.stringify(ledger, null, 2));
+    });
     return { address };
   }
 
