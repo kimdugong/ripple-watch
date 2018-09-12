@@ -10,24 +10,30 @@ class RippleWatch extends Component {
     const address = await ripple.getAccountInfo(
       'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5'
     );
-    // ripple.on('ledger', ledger => {
-    //   console.log('ledger', JSON.stringify(ledger, null, 2));
-    // });
+    const ledger = await ripple.getLedgerVersion();
     console.log(address);
-
-    return { address };
+    return { address, ledger };
   }
+
   renderRow = txs =>
-    txs.map(tx => {
-      console.log('-------------------------', tx);
-      return <TxRow transaction={tx} key={tx.transaction.hash} />;
-    });
+    txs.map(tx => <TxRow transaction={tx} key={tx.transaction.hash} />);
 
   componentDidMount = async () => {
     await ripple.connect();
+    ripple.on('ledger', ledger => this.setState({ currentLedger: ledger }));
     ripple.connection.on('transaction', tx => {
-      // console.log(JSON.stringify(ev, 'transaction event', 2));
-      this.setState(prev => ({ txs: [...prev.txs, tx] }));
+      const affectedNodes = tx.meta.AffectedNodes;
+      const myNode = affectedNodes.filter(
+        node =>
+          node.ModifiedNode.FinalFields.Account ===
+          'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5'
+      );
+
+      this.setState(prev => ({
+        txs: [...prev.txs, tx],
+        xrpBalance: myNode[0].ModifiedNode.FinalFields.Balance / 10 ** 6,
+        previousAffectingTransactionLedgerVersion: tx.ledger_index
+      }));
     });
 
     ripple.request('subscribe', {
@@ -37,10 +43,16 @@ class RippleWatch extends Component {
 
   componentDidUpdate(prevProps) {}
 
-  state = { txs: [] };
+  state = {
+    txs: [],
+    currentLedger: this.props.ledger,
+    xrpBalance: this.props.address.xrpBalance,
+    previousAffectingTransactionLedgerVersion: this.props.address
+      .previousAffectingTransactionLedgerVersion
+  };
 
   render() {
-    const { Header, Row, HeaderCell, Body } = Table;
+    const { Header, Row, HeaderCell, Body, Cell } = Table;
     return (
       <Container>
         <Head>
@@ -51,8 +63,26 @@ class RippleWatch extends Component {
         </Head>
         <div>
           <h1>Dugong's Ripple Watch</h1>
-          <div>현재 블록 : ???</div>
+          <div>현재 렛져 : {this.state.currentLedger.ledgerVersion}</div>
         </div>
+        <Table>
+          <Header>
+            <Row>
+              <HeaderCell>Address</HeaderCell>
+              <HeaderCell>xrpBalance</HeaderCell>
+              <HeaderCell>previousAffectingTransactionLedgerVersion</HeaderCell>
+            </Row>
+          </Header>
+          <Body>
+            <Row>
+              <Cell>{'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5'}</Cell>
+              <Cell>{this.state.xrpBalance}</Cell>
+              <Cell>
+                {this.state.previousAffectingTransactionLedgerVersion}
+              </Cell>
+            </Row>
+          </Body>
+        </Table>
         <Table>
           <Header>
             <Row>
