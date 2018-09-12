@@ -45,3 +45,17 @@ spmyq2KRr2aPJBDHxRGtpnCnfP7dE
 #### Balance
 
 10,000 XRP
+
+### Player 3 another payer
+
+#### Address
+
+rDoqhPVGcjoxMXJ73MYoYGLnUJw3YYuG8X
+
+#### Secret
+
+sh5xQQtZUwFHeSKiU7AKPhbjLMyYr
+
+#### Balance
+
+10,000 XRP
