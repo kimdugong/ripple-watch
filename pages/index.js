@@ -24,18 +24,15 @@ class RippleWatch extends Component {
     txs.map(tx => <TxRow transaction={tx} key={tx.transaction.hash} />);
 
   componentDidMount = async () => {
-    const transactions = this.props.transactions.map(tx => {
-      const transaction = {
-        transaction: {
-          hash: tx.id,
-          Destination: tx.specification.destination.address,
-          Account: tx.address,
-          Amount: tx.specification.destination.amount.value * 10 ** 6
-        }
-      };
-      return transaction;
-    });
-    this.setState(prev => ({ txs: transactions }));
+    const transactions = this.props.transactions.map(tx => ({
+      transaction: {
+        hash: tx.id,
+        Destination: tx.specification.destination.address,
+        Account: tx.address,
+        Amount: tx.specification.destination.amount.value * 10 ** 6
+      }
+    }));
+    this.setState({ txs: transactions });
     await ripple.connect();
     ripple.on('ledger', ledger => this.setState({ currentLedger: ledger }));
     ripple.connection.on('transaction', tx => {
