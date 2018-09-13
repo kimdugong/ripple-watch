@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
+    "axios": "^0.18.0",
     "eslint": "^5.5.0",
     "net": "^1.0.2",
     "next": "^6.1.2",
