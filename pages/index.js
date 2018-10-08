@@ -34,6 +34,7 @@ class RippleWatch extends Component {
     }));
     this.setState({ txs: transactions });
     await ripple.connect();
+    console.log('transactions  : ', this.state.txs);
     ripple.on('ledger', ledger => this.setState({ currentLedger: ledger }));
     ripple.connection.on('transaction', tx => {
       console.log('tx listening  : ', tx);
@@ -41,9 +42,17 @@ class RippleWatch extends Component {
       const myNode = affectedNodes.filter(
         node => node.ModifiedNode.FinalFields.Account === myAddress
       );
-
+      console.log('myNode  : ', myNode);
+      const newTransaction = {
+        transaction: {
+          hash: tx.transaction.hash,
+          Destination: tx.transaction.Destination,
+          Account: tx.transaction.Account,
+          Amount: tx.transaction.Amount
+        }
+      };
       this.setState(prev => ({
-        txs: [...prev.txs, tx],
+        txs: [newTransaction, ...prev.txs],
         xrpBalance: myNode[0].ModifiedNode.FinalFields.Balance / 10 ** 6,
         previousAffectingTransactionLedgerVersion: tx.ledger_index
       }));
