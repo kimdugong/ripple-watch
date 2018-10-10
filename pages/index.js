@@ -3,7 +3,6 @@ import ripple from '../ripple';
 import TxRow from '../components/TxRow';
 import { Container, Table } from 'semantic-ui-react';
 import Head from 'next/head';
-import axios from 'axios';
 
 const api = 'https://data.ripple.com/v2';
 const myAddress = 'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5';
@@ -14,7 +13,7 @@ class RippleWatch extends Component {
     const address = await ripple.getAccountInfo(myAddress);
     const ledger = await ripple.getLedgerVersion();
     const transactions = await ripple.getTransactions(myAddress, {
-      minLedgerVersion: 12500000,
+      minLedgerVersion: 13000000,
       maxLedgerVersion: ledger
     });
     return { address, ledger, transactions };
@@ -35,14 +34,21 @@ class RippleWatch extends Component {
     this.setState({ txs: transactions });
     await ripple.connect();
     console.log('transactions  : ', this.state.txs);
-    ripple.on('ledger', ledger => this.setState({ currentLedger: ledger }));
+    ripple.on('ledger', ledger => {
+      this.setState({ currentLedger: ledger });
+      return console.log(
+        `${ledger.ledgerVersion}번쩨  ledger 생성   :  `,
+        ledger
+      );
+    });
+
     ripple.connection.on('transaction', tx => {
-      console.log('tx listening  : ', tx);
+      console.log('새로운 tx 발견    : ', tx);
       const affectedNodes = tx.meta.AffectedNodes;
-      const myNode = affectedNodes.filter(
+      const myLedger = affectedNodes.filter(
         node => node.ModifiedNode.FinalFields.Account === myAddress
       );
-      console.log('myNode  : ', myNode);
+      console.log('myLedger  : ', myLedger);
       const newTransaction = {
         transaction: {
           hash: tx.transaction.hash,
@@ -53,7 +59,7 @@ class RippleWatch extends Component {
       };
       this.setState(prev => ({
         txs: [newTransaction, ...prev.txs],
-        xrpBalance: myNode[0].ModifiedNode.FinalFields.Balance / 10 ** 6,
+        xrpBalance: myLedger[0].ModifiedNode.FinalFields.Balance / 10 ** 6,
         previousAffectingTransactionLedgerVersion: tx.ledger_index
       }));
     });
@@ -62,8 +68,6 @@ class RippleWatch extends Component {
       accounts: [myAddress]
     });
   };
-
-  componentDidUpdate(prevProps) {}
 
   state = {
     txs: [],

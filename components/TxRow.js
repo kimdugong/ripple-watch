@@ -13,8 +13,8 @@ export default children => {
   return (
     <Row>
       <Cell>{hash}</Cell>
-      <Cell>{Account}</Cell>
-      <Cell>{Destination}</Cell>
+      <Cell>{Account.substr(0, 8)}</Cell>
+      <Cell>{Destination.substr(0, 8)}</Cell>
       <Cell>{Amount / 10 ** 6}</Cell>
     </Row>
   );
