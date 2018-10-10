@@ -15,20 +15,29 @@ class RippleWatch extends Component {
     const transactions = await ripple.getTransactions(myAddress, {
       minLedgerVersion: 13000000,
       maxLedgerVersion: ledger
+      // minLedgerVersion: ledger
     });
     return { address, ledger, transactions };
   }
 
-  renderRow = txs =>
-    txs.map(tx => <TxRow transaction={tx} key={tx.transaction.hash} />);
+  renderRow = (txs, currentLedger) =>
+    txs.map(tx => (
+      <TxRow
+        transaction={tx}
+        currentLedger={currentLedger}
+        key={tx.transaction.hash}
+      />
+    ));
 
   componentDidMount = async () => {
+    console.log(this.props.transactions);
     const transactions = this.props.transactions.map(tx => ({
       transaction: {
         hash: tx.id,
         Destination: tx.specification.destination.address,
         Account: tx.address,
-        Amount: tx.specification.destination.amount.value * 10 ** 6
+        Amount: tx.specification.destination.amount.value * 10 ** 6,
+        ledger_index: tx.outcome.ledgerVersion
       }
     }));
     this.setState({ txs: transactions });
@@ -48,13 +57,14 @@ class RippleWatch extends Component {
       const myLedger = affectedNodes.filter(
         node => node.ModifiedNode.FinalFields.Account === myAddress
       );
-      console.log('myLedger  : ', myLedger);
+
       const newTransaction = {
         transaction: {
           hash: tx.transaction.hash,
           Destination: tx.transaction.Destination,
           Account: tx.transaction.Account,
-          Amount: tx.transaction.Amount
+          Amount: tx.transaction.Amount,
+          ledger_index: tx.ledger_index
         }
       };
       this.setState(prev => ({
@@ -116,9 +126,12 @@ class RippleWatch extends Component {
               <HeaderCell>From</HeaderCell>
               <HeaderCell>To</HeaderCell>
               <HeaderCell>Amount(xrp)</HeaderCell>
+              <HeaderCell>Confirmations</HeaderCell>
             </Row>
           </Header>
-          <Body>{this.renderRow(this.state.txs)}</Body>
+          <Body>
+            {this.renderRow(this.state.txs, this.state.currentLedger)}
+          </Body>
         </Table>
       </Container>
     );

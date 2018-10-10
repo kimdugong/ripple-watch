@@ -1,14 +1,15 @@
 import React from 'react';
 import { Table, Button } from 'semantic-ui-react';
 
-export default children => {
+export default props => {
   const { Row, Cell } = Table;
   const {
     hash,
     Destination,
     Account,
-    Amount
-  } = children.transaction.transaction;
+    Amount,
+    ledger_index
+  } = props.transaction.transaction;
 
   return (
     <Row>
@@ -16,6 +17,7 @@ export default children => {
       <Cell>{Account.substr(0, 8)}</Cell>
       <Cell>{Destination.substr(0, 8)}</Cell>
       <Cell>{Amount / 10 ** 6}</Cell>
+      <Cell>{props.currentLedger.ledgerVersion - ledger_index}</Cell>
     </Row>
   );
 };
