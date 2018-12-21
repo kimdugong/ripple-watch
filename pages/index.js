@@ -10,11 +10,17 @@ const myAddress = 'rN3dBbAqB7b47GB2BPKvP3Y61pkciNKiE5';
 class RippleWatch extends Component {
   static async getInitialProps() {
     await ripple.connect();
+
+    const serverInfo = await ripple.getServerInfo();
+    const ledgers = serverInfo.completeLedgers.split('-');
+    const minLedgerVersion = Number(ledgers[0]);
+    const maxLedgerVersion = Number(ledgers[1]);
+
     const address = await ripple.getAccountInfo(myAddress);
     const ledger = await ripple.getLedgerVersion();
     const transactions = await ripple.getTransactions(myAddress, {
-      minLedgerVersion: 13000000,
-      maxLedgerVersion: ledger
+      minLedgerVersion,
+      maxLedgerVersion
       // minLedgerVersion: ledger
     });
     return { address, ledger, transactions };
